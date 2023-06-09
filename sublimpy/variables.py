@@ -131,6 +131,8 @@ def apogee2temp(ds,tower):
 
 def add_longwave_radiation(ds):
     """Add longwave radiation calculated from the radiometer on tower d
+    From:
+    https://www.eol.ucar.edu/content/calculation-long-wave-radiation
 
     Args:
         ds (xr.Dataset): SoS dataset to add variables too
