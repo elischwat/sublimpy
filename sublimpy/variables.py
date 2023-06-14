@@ -144,6 +144,7 @@ def add_longwave_radiation(ds):
     ds['Rlw_in_9m_d'] = ds['Rpile_in_9m_d'] + STEVEN_BOLTZMAN*(ds['Tcase_in_9m_d']+273.15)
     ds['Rlw_out_9m_d'] = ds['Rpile_out_9m_d'] + STEVEN_BOLTZMAN*(ds['Tcase_out_9m_d']+273.15)
 
+    return ds
 
 def add_surface_temps(ds):
     """Add surface temperatures calculated from the apogees on 4 towers and from the 

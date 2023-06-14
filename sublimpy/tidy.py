@@ -117,6 +117,8 @@ def _height_from_variable_name(name):
     # surface measurements
     elif 'surf' in name:
         return 0.0
+    else:
+        return 0.0
 
 
 def _tower_from_variable_name(name):
@@ -128,6 +130,13 @@ def _tower_from_variable_name(name):
     Returns:
         str: tower of measurement
     """
+    if name.startswith('SWE_'):
+        return {
+            'SWE_p1_c': 'uw',
+            'SWE_p2_c': 'c',
+            'SWE_p3_c': 'ue',
+            'SWE_p4_c': 'd',
+        }.get(name)
     if name.endswith('_d'):
         return 'd'
     elif name.endswith('_c'):
@@ -222,6 +231,8 @@ def _measurement_from_variable_name(name):
         'Tsnow_1_0m_', 'Tsnow_1_1m_', 'Tsnow_1_2m_', 'Tsnow_1_3m_', 'Tsnow_1_4m_', 'Tsnow_1_5m_'
     ]]):
         return 'snow temperature'
+    elif any([prefix in name for prefix in ['SWE_p1_c', 'SWE_p2_c', 'SWE_p3_c', 'SWE_p4_c']]): # these are the only two 
+        return 'SWE'
     # VARIABLE NAMES THAT do not COME FROM THE SOSNOQC DATASETS but we add and use a naming schema consistent with SOSNOQC dataset naming schema
     elif any([prefix in name for prefix in [
         'Tpot_1m_', 'Tpot_2m_', 'Tpot_3m_', 'Tpot_4m_', 'Tpot_5m_', 'Tpot_6m_', 'Tpot_7m_', 'Tpot_8m_', 'Tpot_9m_', 'Tpot_10m_', 
