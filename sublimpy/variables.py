@@ -127,7 +127,12 @@ def apogee2temp(ds,tower):
     # sufs = suffixes(TTc,leadch='') # get suffixes
     # dimnames(TTc)[[2]] = paste0("Tsfc.Ap.",sufs)
     TTc = TTc * units('celsius')
-    return TTc
+
+    # convert from brightness temp to actual temp
+    TTk_brightness = TTc.pint.to("kelvin")
+    TTk_actual = TTk_brightness*SNOW_EMMISIVITY**(1/4)
+    TTc_actual = TTk_actual.pint.to("celsius")
+    return TTc_actual
 
 def add_longwave_radiation(ds):
     """Add longwave radiation calculated from the radiometer on tower d
@@ -170,6 +175,22 @@ def add_surface_temps(ds):
     ds['Tsurf_uw'] = (['time'],  apogee2temp(ds, 'uw').values)
     
     return ds
+
+def add_height_adjusted_pressure(ds):
+    # iterate over heights on C tower.
+    for i in range(2,21):
+        absolute_pressure = ds['P_10m_c'] * units.millibar
+        height_relative_to_10m_pressure_sensor = i*units.m - (10*units.m)
+
+        height_adj_pressure = metpy.calc.add_height_to_pressure(
+            absolute_pressure, 
+            height_relative_to_10m_pressure_sensor
+        )
+        ds[f'Tpot_{i}m_c'] = (['time'], height_adj_pressure.pint.magnitude)
+        ds[f'Tpot_{i}m_c'] = ds[f'Tpot_{i}m_c'].assign_attrs(units = str(height_adj_pressure.pint.units))
+    
+    return ds
+
 
 def add_potential_virtual_temperatures(ds):
     """Add potential temperature, virtual temperature, potential virtual temperature, 
@@ -228,6 +249,10 @@ def add_potential_virtual_temperatures(ds):
     
     return ds
 
+## ToDo: this is kind of whacky because it uses LW radiometer measurements form Tower D to assign temperatures and (water) 
+# mixing ratios to variables labeled as C tower. Originally I did this because I thought the LW radiometer was the most accurate
+# measurement of surface temperature. I think we should switch this and assign these variables for all surface temperature measurements
+# on each tower
 def add_surface_potential_virtual_temperatures(ds):
     """Add potential temperature, virtual temperature, potential virtual temperature, 
     air density, and mixing ratio variables for surface temperature measurements on the C tower.
@@ -238,52 +263,55 @@ def add_surface_potential_virtual_temperatures(ds):
     Returns:
         xr.Dataset: Augmented SoS dataset.
     """
-    height_relative_to_10m_pressure_sensor = - (10*units.m)
-    absolute_temperature = ds['Tsurf_rad_d']*units.celsius
-    absolute_pressure = ds['P_10m_c'] * units.millibar
+    surface_temp_measurement_suffixes = ['_rad_d', '_c']
 
-    relative_humidity = 100
+    for suffix in surface_temp_measurement_suffixes:
+        height_relative_to_10m_pressure_sensor = - (10*units.m)
+        absolute_temperature = ds[f'Tsurf{suffix}']*units.celsius
+        absolute_pressure = ds['P_10m_c'] * units.millibar
 
-    height_adj_pressure = metpy.calc.add_height_to_pressure(
-        absolute_pressure, 
-        height_relative_to_10m_pressure_sensor
-    )
+        relative_humidity = 100
 
-    potential_temperature = metpy.calc.potential_temperature(    
-        height_adj_pressure,
-        absolute_temperature
-    ).pint.to(units.celsius)
+        height_adj_pressure = metpy.calc.add_height_to_pressure(
+            absolute_pressure, 
+            height_relative_to_10m_pressure_sensor
+        )
 
-    mixing_ratio = xr.DataArray(relative_humidity/100) * metpy.calc.saturation_mixing_ratio(
+        potential_temperature = metpy.calc.potential_temperature(    
             height_adj_pressure,
             absolute_temperature
+        ).pint.to(units.celsius)
+
+        mixing_ratio = xr.DataArray(relative_humidity/100) * metpy.calc.saturation_mixing_ratio(
+                height_adj_pressure,
+                absolute_temperature
+            )
+        air_density = metpy.calc.density(height_adj_pressure, absolute_temperature, mixing_ratio)
+
+        virtual_potential_temperature = metpy.calc.virtual_temperature(
+            potential_temperature,
+            mixing_ratio,
         )
-    air_density = metpy.calc.density(height_adj_pressure, absolute_temperature, mixing_ratio)
 
-    virtual_potential_temperature = metpy.calc.virtual_temperature(
-        potential_temperature,
-        mixing_ratio,
-    )
+        virtual_temperature = metpy.calc.virtual_temperature(
+            absolute_temperature,
+            mixing_ratio,
+        )
 
-    virtual_temperature = metpy.calc.virtual_temperature(
-        absolute_temperature,
-        mixing_ratio,
-    )
+        ds[f'Tsurfvirtual{suffix}'] = (['time'], virtual_temperature.pint.magnitude)
+        ds[f'Tsurfvirtual{suffix}'] = ds[f'Tsurfvirtual{suffix}'].assign_attrs(units = str(virtual_temperature.pint.units))
 
-    ds[f'Tsurfvirtual_rad_c'] = (['time'], virtual_temperature.pint.magnitude)
-    ds[f'Tsurfvirtual_rad_c'] = ds[f'Tsurfvirtual_rad_c'].assign_attrs(units = str(virtual_temperature.pint.units))
+        ds[f'Tsurfpotvirtual{suffix}'] = (['time'], virtual_potential_temperature.pint.magnitude)
+        ds[f'Tsurfpotvirtual{suffix}'] = ds[f'Tsurfpotvirtual{suffix}'].assign_attrs(units = str(virtual_potential_temperature.pint.units))
 
-    ds[f'Tsurfpotvirtual_rad_c'] = (['time'], virtual_potential_temperature.pint.magnitude)
-    ds[f'Tsurfpotvirtual_rad_c'] = ds[f'Tsurfpotvirtual_rad_c'].assign_attrs(units = str(virtual_potential_temperature.pint.units))
+        ds[f'Tsurfairdensity{suffix}'] = (['time'], air_density.pint.magnitude)
+        ds[f'Tsurfairdensity{suffix}'] = ds[f'Tsurfairdensity{suffix}'].assign_attrs(units = str(air_density.pint.units))
 
-    ds[f'Tsurfairdensity_rad_c'] = (['time'], air_density.pint.magnitude)
-    ds[f'Tsurfairdensity_rad_c'] = ds[f'Tsurfairdensity_rad_c'].assign_attrs(units = str(air_density.pint.units))
+        ds[f'Tsurfmixingratio{suffix}'] = (['time'], mixing_ratio.pint.magnitude)
+        ds[f'Tsurfmixingratio{suffix}'] = ds[f'Tsurfmixingratio{suffix}'].assign_attrs(units = str(mixing_ratio.pint.units))
 
-    ds[f'Tsurfmixingratio_rad_c'] = (['time'], mixing_ratio.pint.magnitude)
-    ds[f'Tsurfmixingratio_rad_c'] = ds[f'Tsurfmixingratio_rad_c'].assign_attrs(units = str(mixing_ratio.pint.units))
-
-    ds[f'Tsurfpot_rad_c'] = (['time'], potential_temperature.pint.magnitude)
-    ds[f'Tsurfpot_rad_c'] = ds[f'Tsurfpot_rad_c'].assign_attrs(units = str(potential_temperature.pint.units))
+        ds[f'Tsurfpot{suffix}'] = (['time'], potential_temperature.pint.magnitude)
+        ds[f'Tsurfpot{suffix}'] = ds[f'Tsurfpot{suffix}'].assign_attrs(units = str(potential_temperature.pint.units))
     
     return ds
 

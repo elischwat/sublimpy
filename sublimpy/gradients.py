@@ -131,7 +131,7 @@ class LogPolynomialWithRoughness:
         """    
         
         obs_heights = [Z0,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-        temp_variables = ['Tsurfpotvirtual_rad_c'] + [f'Tpotvirtual_{h}m_c' for h in obs_heights[1:]]
+        temp_variables = ['Tsurfpotvirtual_c'] + [f'Tpotvirtual_{h}m_c' for h in obs_heights[1:]]
 
         # create_datasets for u and v data 
         temp_ds = ds[temp_variables].to_dataframe().rename(

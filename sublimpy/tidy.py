@@ -257,10 +257,11 @@ def _measurement_from_variable_name(name):
         return 'air density'
     elif name.startswith('Tsurfmixingratio'):
         return 'mixing ratio'
-    elif name.startswith('Tsurfpot'):
-        return 'surface potential temperature'
+    # the order of the following two matters
     elif name.startswith('Tsurfpotvirtual'):
         return 'surface potential virtual temperature'
+    elif name.startswith('Tsurfpot'):
+        return 'surface potential temperature'
     elif name.startswith('Tsurfvirtual'):
         return 'surface virtual temperature'
     elif name.startswith('Tvirtual'):
