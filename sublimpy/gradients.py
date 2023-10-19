@@ -325,9 +325,9 @@ class Ri:
         """
         pot_virt_temperature_at_height = ds[f'Tpotvirtual_{height}m_{tower}']
         pot_temperature_at_height = ds[f'Tpot_{height}m_{tower}']
-        pot_temperature_at_surface = ds[f'Tsurfpot_rad_{tower}']
+        pot_temperature_at_surface = ds[f'Tsurfpot_{tower}']
         specific_humidity_at_height = ds[f'mixingratio_{height}m_{tower}']
-        specific_humidity_at_surface = ds[f'Tsurfmixingratio_rad_{tower}']
+        specific_humidity_at_surface = ds[f'Tsurfmixingratio_{tower}']
         wind_speed_at_height = ds[f'spd_{height}m_{tower}']
 
         term1 = (metpy.constants.g.magnitude * height) / (pot_virt_temperature_at_height)

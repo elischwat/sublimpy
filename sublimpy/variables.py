@@ -130,7 +130,7 @@ def apogee2temp(ds,tower):
 
     # convert from brightness temp to actual temp
     TTk_brightness = TTc.pint.to("kelvin")
-    TTk_actual = TTk_brightness*SNOW_EMMISIVITY**(1/4)
+    TTk_actual = TTk_brightness*(1/SNOW_EMMISIVITY)**(1/4)
     TTc_actual = TTk_actual.pint.to("celsius")
     return TTc_actual
 
