@@ -83,7 +83,7 @@ DEFAULT_VARIABLES = [
     'Rsw_in_9m_d',
 ]
 
-def apogee2temp(ds,tower):
+def apogee2temp(ds,tower, brightness_conversion_method = 'stefan–boltzmann'):
     """Calculate surface temperature from apogee data.
 
     Args:
@@ -127,12 +127,26 @@ def apogee2temp(ds,tower):
     # sufs = suffixes(TTc,leadch='') # get suffixes
     # dimnames(TTc)[[2]] = paste0("Tsfc.Ap.",sufs)
     TTc = TTc * units('celsius')
+    TTk_brightness = TTc.pint.to("kelvin")
 
     # convert from brightness temp to actual temp
-    TTk_brightness = TTc.pint.to("kelvin")
-    TTk_actual = TTk_brightness*(1/SNOW_EMMISIVITY)**(1/4)
-    TTc_actual = TTk_actual.pint.to("celsius")
-    return TTc_actual
+    if brightness_conversion_method == 'stefan–boltzmann':
+        TTk_actual = TTk_brightness*(1/SNOW_EMMISIVITY)**(1/4)
+        TTc_actual = TTk_actual.pint.to("celsius")
+        return TTc_actual
+    elif brightness_conversion_method == 'planck':
+        wavelength = 11e-6
+        h=6.62606896e-34 # Planck, J/s
+        k=1.3806504e-23 # Boltzmann, J/K
+        c=299792458 # speed of light, m/s
+        TTk_actual = h*c/(wavelength*k)*1/(np.log(1-SNOW_EMMISIVITY+SNOW_EMMISIVITY*np.exp(h*c/(k*wavelength*TTk_brightness.pint.magnitude))));
+        # do conversion from K to ˚C using metpy
+        TTk_actual = TTk_actual * units('kelvin')
+        TTc_actual = TTk_actual.to("celsius")
+        return xr.DataArray(TTc_actual)
+    else:
+        raise ValueError(f"brightness_conversion_method parameter should be either 'stefan–boltzmann' or 'planck', got {brightness_conversion_method}")
+
 
 def add_longwave_radiation(ds):
     """Add longwave radiation calculated from the radiometer on tower d
@@ -173,6 +187,11 @@ def add_surface_temps(ds):
     ds['Tsurf_d'] = (['time'],  apogee2temp(ds, 'd').values)
     ds['Tsurf_ue'] = (['time'],  apogee2temp(ds, 'ue').values)
     ds['Tsurf_uw'] = (['time'],  apogee2temp(ds, 'uw').values)
+
+    ds['Tsurfplanck_c'] = (['time'],  apogee2temp(ds, 'c', brightness_conversion_method='planck').values)
+    ds['Tsurfplanck_d'] = (['time'],  apogee2temp(ds, 'd', brightness_conversion_method='planck').values)
+    ds['Tsurfplanck_ue'] = (['time'],  apogee2temp(ds, 'ue', brightness_conversion_method='planck').values)
+    ds['Tsurfplanck_uw'] = (['time'],  apogee2temp(ds, 'uw', brightness_conversion_method='planck').values)
     
     return ds
 
@@ -221,6 +240,11 @@ def add_potential_virtual_temperatures(ds):
             height_adj_pressure,
             absolute_temperature
         )
+        vapor_pressure = metpy.calc.vapor_pressure(
+            height_adj_pressure,
+            mixing_ratio
+        ).pint.to(units.pascals)
+
         air_density = metpy.calc.density(height_adj_pressure, absolute_temperature, mixing_ratio)
         virtual_potential_temperature = metpy.calc.virtual_temperature(
             potential_temperature,
@@ -246,13 +270,12 @@ def add_potential_virtual_temperatures(ds):
 
         ds[f'mixingratio_{i}m_c'] = (['time'], mixing_ratio.pint.magnitude)
         ds[f'mixingratio_{i}m_c'] = ds[f'mixingratio_{i}m_c'].assign_attrs(units = str(mixing_ratio.pint.units))
+
+        ds[f'vaporpressure_{i}m_c'] = (['time'], vapor_pressure.pint.magnitude)
+        ds[f'vaporpressure_{i}m_c'] = ds[f'vaporpressure_{i}m_c'].assign_attrs(units = str(vapor_pressure.pint.units))
     
     return ds
 
-## ToDo: this is kind of whacky because it uses LW radiometer measurements form Tower D to assign temperatures and (water) 
-# mixing ratios to variables labeled as C tower. Originally I did this because I thought the LW radiometer was the most accurate
-# measurement of surface temperature. I think we should switch this and assign these variables for all surface temperature measurements
-# on each tower
 def add_surface_potential_virtual_temperatures(ds):
     """Add potential temperature, virtual temperature, potential virtual temperature, 
     air density, and mixing ratio variables for surface temperature measurements on the C tower.
@@ -286,6 +309,11 @@ def add_surface_potential_virtual_temperatures(ds):
                 height_adj_pressure,
                 absolute_temperature
             )
+        vapor_pressure = metpy.calc.vapor_pressure(
+            height_adj_pressure,
+            mixing_ratio
+        ).pint.to(units.pascals)
+
         air_density = metpy.calc.density(height_adj_pressure, absolute_temperature, mixing_ratio)
 
         virtual_potential_temperature = metpy.calc.virtual_temperature(
@@ -309,6 +337,9 @@ def add_surface_potential_virtual_temperatures(ds):
 
         ds[f'Tsurfmixingratio{suffix}'] = (['time'], mixing_ratio.pint.magnitude)
         ds[f'Tsurfmixingratio{suffix}'] = ds[f'Tsurfmixingratio{suffix}'].assign_attrs(units = str(mixing_ratio.pint.units))
+
+        ds[f'Tsurfvaporpressure{suffix}'] = (['time'], vapor_pressure.pint.magnitude)
+        ds[f'Tsurfvaporpressure{suffix}'] = ds[f'Tsurfvaporpressure{suffix}'].assign_attrs(units = str(vapor_pressure.pint.units))
 
         ds[f'Tsurfpot{suffix}'] = (['time'], potential_temperature.pint.magnitude)
         ds[f'Tsurfpot{suffix}'] = ds[f'Tsurfpot{suffix}'].assign_attrs(units = str(potential_temperature.pint.units))

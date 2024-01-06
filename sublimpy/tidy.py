@@ -137,15 +137,15 @@ def _tower_from_variable_name(name):
             'SWE_p3_c': 'ue',
             'SWE_p4_c': 'd',
         }.get(name)
-    if name.endswith('_d'):
+    if name.endswith('_d') or name.endswith('_d_1') or name.endswith('_d_2') or name.endswith('_d_3'):
         return 'd'
-    elif name.endswith('_c'):
+    if name.endswith('_c') or name.endswith('_c_1') or name.endswith('_c_2') or name.endswith('_c_3'):
         return 'c'
-    elif name.endswith('_ue'):
+    if name.endswith('_ue') or name.endswith('_ue_1') or name.endswith('_ue_2') or name.endswith('_ue_3'):
         return 'ue'
-    elif name.endswith('uw'):
+    if name.endswith('_uw') or name.endswith('_uw_1') or name.endswith('_uw_2') or name.endswith('_uw_3'):
         return 'uw'
-    
+
 
 def _measurement_from_variable_name(name):
     """Provide plain text measurement name from EOL variable names.
@@ -157,6 +157,15 @@ def _measurement_from_variable_name(name):
         _type_: _description_
     """
     # VARIABLE NAMES THAT COME FROM THE SOSNOQC DATASETS
+    if name.startswith('counts_'):
+        if name.endswith('_1'):
+            return 'eddy covariance h2o high rate count'
+        elif name.endswith('_2'):
+            return 'eddy covariance co2 high rate count'
+        elif name.endswith('_3'):
+            return 'eddy covariance P high rate count'
+        else:
+            return 'eddy covariance momentum high rate count'        
     if any([prefix in name for prefix in ['SF_avg_1m_ue', 'SF_avg_2m_ue']]): # these are the only two 
         return 'snow flux'
     elif any([prefix in name for prefix in ['P_10m_', 'P_20m_']]):
@@ -243,7 +252,7 @@ def _measurement_from_variable_name(name):
         return 'longwave radiation incoming'
     elif name == 'Rlw_out_9m_d':
         return 'longwave radiation outgoing'
-    elif name in ['Tsurf_c', 'Tsurf_d', 'Tsurf_ue', 'Tsurf_uw', 'Tsurf_rad_d']:
+    elif name in ['Tsurf_c', 'Tsurf_d', 'Tsurf_ue', 'Tsurf_uw', 'Tsurf_rad_d', 'Tsurfplanck_c', 'Tsurfplanck_d', 'Tsurfplanck_ue', 'Tsurfplanck_uw']:
         return "surface temperature"
     elif any([prefix in name for prefix in ['tke_1m_',    'tke_2m_',    'tke_3m_',    'tke_5m_',    'tke_10m_',    'tke_15m_',    'tke_20m_']]):
         return "turbulent kinetic energy"
@@ -262,6 +271,8 @@ def _measurement_from_variable_name(name):
         return 'surface potential virtual temperature'
     elif name.startswith('Tsurfpot'):
         return 'surface potential temperature'
+    elif name.startswith('Tsurfvaporpressure'):
+        return 'vapor pressure'
     elif name.startswith('Tsurfvirtual'):
         return 'surface virtual temperature'
     elif name.startswith('Tvirtual'):
@@ -270,6 +281,8 @@ def _measurement_from_variable_name(name):
         return 'air density'
     elif name.startswith('mixingratio'):
         return 'mixing ratio'
+    elif name.startswith('vaporpressure'):
+        return 'vapor pressure'
     elif name.startswith('temp_gradient'):
         return 'temperature gradient'
     elif name.startswith('wind_gradient'):
@@ -316,7 +329,7 @@ def tidy_df_add_variable(tidy_df_original, variable_new, variable, measurement, 
         _type_: _description_
     """
     time_array = tidy_df_original.time.drop_duplicates()
-    assert len(variable_new) == len(time_array)
+    assert len(variable_new) == len(time_array), f"Found {len(variable_new)} not {len(time_array)}"
     new_data_df = pd.DataFrame({
         'time': time_array,
         'value': variable_new
