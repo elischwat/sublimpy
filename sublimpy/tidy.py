@@ -328,7 +328,7 @@ def tidy_df_add_variable(tidy_df_original, variable_new, variable, measurement, 
     Returns:
         _type_: _description_
     """
-    time_array = tidy_df_original.time.drop_duplicates()
+    time_array = tidy_df_original.time.drop_duplicates().values
     assert len(variable_new) == len(time_array), f"Found {len(variable_new)} not {len(time_array)}"
     new_data_df = pd.DataFrame({
         'time': time_array,
