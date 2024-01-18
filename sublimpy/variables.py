@@ -236,9 +236,10 @@ def add_potential_virtual_temperatures(ds):
                 height_adj_pressure,
                 absolute_temperature
         ).pint.to(units.celsius)
-        mixing_ratio = xr.DataArray(relative_humidity/100) * metpy.calc.saturation_mixing_ratio(
+        mixing_ratio = metpy.calc.mixing_ratio_from_relative_humidity(
             height_adj_pressure,
-            absolute_temperature
+            absolute_temperature,
+            xr.DataArray(relative_humidity/100)
         )
         vapor_pressure = metpy.calc.vapor_pressure(
             height_adj_pressure,
@@ -305,10 +306,11 @@ def add_surface_potential_virtual_temperatures(ds):
             absolute_temperature
         ).pint.to(units.celsius)
 
-        mixing_ratio = xr.DataArray(relative_humidity/100) * metpy.calc.saturation_mixing_ratio(
-                height_adj_pressure,
-                absolute_temperature
-            )
+        mixing_ratio = metpy.calc.mixing_ratio_from_relative_humidity(
+            height_adj_pressure,
+            absolute_temperature,
+            xr.DataArray(relative_humidity/100)
+        )
         vapor_pressure = metpy.calc.vapor_pressure(
             height_adj_pressure,
             mixing_ratio
