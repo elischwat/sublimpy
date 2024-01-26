@@ -75,9 +75,17 @@ DEFAULT_VARIABLES = [
     'Tsnow_0_4m_d', 'Tsnow_0_5m_d', 'Tsnow_0_6m_d', 'Tsnow_0_7m_d', 'Tsnow_0_8m_d', 'Tsnow_0_9m_d', 'Tsnow_1_0m_d', 'Tsnow_1_1m_d', 'Tsnow_1_2m_d', 'Tsnow_1_3m_d', 'Tsnow_1_4m_d', 'Tsnow_1_5m_d',
     'Tsnow_0_4m_uw', 'Tsnow_0_5m_uw', 'Tsnow_0_6m_uw', 'Tsnow_0_7m_uw', 'Tsnow_0_8m_uw', 'Tsnow_0_9m_uw', 'Tsnow_1_0m_uw', 'Tsnow_1_1m_uw', 'Tsnow_1_2m_uw', 'Tsnow_1_3m_uw', 'Tsnow_1_4m_uw', 'Tsnow_1_5m_uw',
     
-    # Downward Facing Longwave Radiometer (tower D) - for measuring snow surface temperature
+    # Downward Facing Longwave Radiometer (tower D)
     'Rpile_out_9m_d',
     'Tcase_out_9m_d',
+    # Upward Facing Longwave Radiometer (tower D)
+    'Rpile_in_9m_d',
+    'Tcase_in_9m_d',
+
+    # Upward/Downward Facing Longwave Radiometer (tower UW)
+    'Tcase_uw',
+    'Rpile_out_uw',
+    'Rpile_in_uw',  
     
     # Upward facing shortwave radiometer (tower D) - for measuring incoming solar radiation!
     'Rsw_in_9m_d',
@@ -162,6 +170,9 @@ def add_longwave_radiation(ds):
     # Radiometer temperatures
     ds['Rlw_in_9m_d'] = ds['Rpile_in_9m_d'] + STEVEN_BOLTZMAN*(ds['Tcase_in_9m_d']+273.15)
     ds['Rlw_out_9m_d'] = ds['Rpile_out_9m_d'] + STEVEN_BOLTZMAN*(ds['Tcase_out_9m_d']+273.15)
+
+    ds['Rlw_in_9m_uw'] = ds['Rpile_in_uw'] + STEVEN_BOLTZMAN*(ds['Tcase_uw']+273.15)
+    ds['Rlw_out_9m_uw'] = ds['Rpile_out_uw'] + STEVEN_BOLTZMAN*(ds['Tcase_uw']+273.15)
 
     return ds
 
