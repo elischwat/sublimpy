@@ -291,6 +291,8 @@ def _measurement_from_variable_name(name):
         return 'shear velocity'
     elif name.startswith("L_"):
         return 'Obukhov length'
+    elif name.startswith("omega_"):
+        return 'Decoupling metric'
     
 
 def get_tidy_dataset(ds, variable_names):
