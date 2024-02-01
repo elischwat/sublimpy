@@ -258,7 +258,7 @@ def add_potential_virtual_temperatures(ds):
         ).pint.to(units.pascals)
 
         air_density = metpy.calc.density(height_adj_pressure, absolute_temperature, mixing_ratio)
-        
+
         virtual_temperature = metpy.calc.virtual_temperature(
             absolute_temperature,
             mixing_ratio,
@@ -307,8 +307,6 @@ def add_surface_potential_virtual_temperatures(ds):
         absolute_temperature = ds[f'Tsurf{suffix}']*units.celsius
         absolute_pressure = ds['P_10m_c'] * units.millibar
 
-        relative_humidity = 100
-
         height_adj_pressure = metpy.calc.add_height_to_pressure(
             absolute_pressure, 
             height_relative_to_10m_pressure_sensor
@@ -319,18 +317,24 @@ def add_surface_potential_virtual_temperatures(ds):
             absolute_temperature
         ).pint.to(units.celsius)
 
-        mixing_ratio = metpy.calc.mixing_ratio_from_relative_humidity(
-            height_adj_pressure,
-            absolute_temperature,
-            xr.DataArray(relative_humidity/100)
+        # returns in millibars
+        # equation 23 in https://journals.ametsoc.org/view/journals/apme/35/4/1520-0450_1996_035_0601_imfaos_2_0_co_2.xml?tab_body=pdf
+        # For saturation vapor pressure over a plane surface of ice (-80˚C - 0.0
+        def e_sat_alduchov(temp_in_c):
+            temp_in_c = temp_in_c.pint.magnitude
+            millibars = 6.1121*np.exp(22.587*temp_in_c / (273.86 + temp_in_c))
+            return millibars
+
+        saturation_vapor_pressure = (
+            e_sat_alduchov(absolute_temperature) * units.millibar
+        ).to(units.pascals)
+
+        mixing_ratio = metpy.calc.mixing_ratio(
+            saturation_vapor_pressure, 
+            absolute_pressure
         )
-        vapor_pressure = metpy.calc.vapor_pressure(
-            height_adj_pressure,
-            mixing_ratio
-        ).pint.to(units.pascals)
 
         air_density = metpy.calc.density(height_adj_pressure, absolute_temperature, mixing_ratio)
-
                 
         virtual_temperature = metpy.calc.virtual_temperature(
             absolute_temperature,
@@ -342,7 +346,8 @@ def add_surface_potential_virtual_temperatures(ds):
             absolute_temperature, 
             mixing_ratio
         )
-
+        print(type(air_density))
+        print(type(mixing_ratio))
         ds[f'Tsurfvirtual{suffix}'] = (['time'], virtual_temperature.pint.magnitude)
         ds[f'Tsurfvirtual{suffix}'] = ds[f'Tsurfvirtual{suffix}'].assign_attrs(units = str(virtual_temperature.pint.units))
 
@@ -352,11 +357,11 @@ def add_surface_potential_virtual_temperatures(ds):
         ds[f'Tsurfairdensity{suffix}'] = (['time'], air_density.pint.magnitude)
         ds[f'Tsurfairdensity{suffix}'] = ds[f'Tsurfairdensity{suffix}'].assign_attrs(units = str(air_density.pint.units))
 
-        ds[f'Tsurfmixingratio{suffix}'] = (['time'], mixing_ratio.pint.magnitude)
-        ds[f'Tsurfmixingratio{suffix}'] = ds[f'Tsurfmixingratio{suffix}'].assign_attrs(units = str(mixing_ratio.pint.units))
+        ds[f'Tsurfmixingratio{suffix}'] = (['time'], mixing_ratio.magnitude)
+        ds[f'Tsurfmixingratio{suffix}'] = ds[f'Tsurfmixingratio{suffix}'].assign_attrs(units = str(mixing_ratio.units))
 
-        ds[f'Tsurfvaporpressure{suffix}'] = (['time'], vapor_pressure.pint.magnitude)
-        ds[f'Tsurfvaporpressure{suffix}'] = ds[f'Tsurfvaporpressure{suffix}'].assign_attrs(units = str(vapor_pressure.pint.units))
+        ds[f'Tsurfvaporpressure{suffix}'] = (['time'], saturation_vapor_pressure.magnitude)
+        ds[f'Tsurfvaporpressure{suffix}'] = ds[f'Tsurfvaporpressure{suffix}'].assign_attrs(units = str(saturation_vapor_pressure.units))
 
         ds[f'Tsurfpot{suffix}'] = (['time'], potential_temperature.pint.magnitude)
         ds[f'Tsurfpot{suffix}'] = ds[f'Tsurfpot{suffix}'].assign_attrs(units = str(potential_temperature.pint.units))
