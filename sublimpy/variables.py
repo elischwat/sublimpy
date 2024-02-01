@@ -258,14 +258,16 @@ def add_potential_virtual_temperatures(ds):
         ).pint.to(units.pascals)
 
         air_density = metpy.calc.density(height_adj_pressure, absolute_temperature, mixing_ratio)
-        virtual_potential_temperature = metpy.calc.virtual_temperature(
-            potential_temperature,
-            mixing_ratio,
-        )
-
+        
         virtual_temperature = metpy.calc.virtual_temperature(
             absolute_temperature,
             mixing_ratio,
+        )
+
+        virtual_potential_temperature = metpy.calc.virtual_potential_temperature(
+            height_adj_pressure, 
+            absolute_temperature, 
+            mixing_ratio
         )
     
         ds[f'Tpot_{i}m_c'] = (['time'], potential_temperature.pint.magnitude)
@@ -329,14 +331,16 @@ def add_surface_potential_virtual_temperatures(ds):
 
         air_density = metpy.calc.density(height_adj_pressure, absolute_temperature, mixing_ratio)
 
-        virtual_potential_temperature = metpy.calc.virtual_temperature(
-            potential_temperature,
-            mixing_ratio,
-        )
-
+                
         virtual_temperature = metpy.calc.virtual_temperature(
             absolute_temperature,
             mixing_ratio,
+        )
+
+        virtual_potential_temperature = metpy.calc.virtual_potential_temperature(
+            height_adj_pressure, 
+            absolute_temperature, 
+            mixing_ratio
         )
 
         ds[f'Tsurfvirtual{suffix}'] = (['time'], virtual_temperature.pint.magnitude)
