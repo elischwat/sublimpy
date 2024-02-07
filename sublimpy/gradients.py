@@ -311,7 +311,7 @@ class Ri:
     ):
         """The standard gradient richardson number. See Grachev et al. (2008) equation 3.
         """
-        multiplier = metpy.constants.g.magnitude / (ds[f'Tvirtual_{height}m_c'] * units.celsius).pint.to(units.kelvin)
+        multiplier = metpy.constants.g.magnitude / (ds[f'Tpotvirtual_{height}m_c'] * units.celsius).pint.to(units.kelvin)
         Ri = multiplier * ds[f'{temp_gradient_prefix}_{height}m_{tower}'] / ds[f'{wind_gradient_prefix}_{height}m_{tower}']**2
         return Ri.pint.magnitude
 
