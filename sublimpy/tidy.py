@@ -293,6 +293,8 @@ def _measurement_from_variable_name(name):
         return 'Obukhov length'
     elif name.startswith("omega_"):
         return 'Decoupling metric'
+    elif name.startswith("SnowDepth_"):
+        return 'snow depth'
     
 
 def get_tidy_dataset(ds, variable_names):
