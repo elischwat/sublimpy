@@ -128,13 +128,17 @@ class LogPolynomialWithRoughness:
         """ 
         These calculations are done by fitting log-polynomial curve to temperature measurements 
         on tower C.
+        We DO include the boundary wall condition, applying the measured surface temperature
+        at a roughness height (T=T_s at z=z0). Therefore, we adjust for snow depth in our calculations.
         """    
         
         obs_heights = [Z0,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
         temp_variables = ['Tsurfpotvirtual_c'] + [f'Tpotvirtual_{h}m_c' for h in obs_heights[1:]]
+        
+        snowdepth_variable = 'SnowDepth_d'
 
         # create_datasets for u and v data 
-        temp_ds = ds[temp_variables].to_dataframe().rename(
+        temp_ds = ds[temp_variables + [snowdepth_variable]].to_dataframe().rename(
             columns=dict(zip(
                 temp_variables, 
                 obs_heights
@@ -143,8 +147,12 @@ class LogPolynomialWithRoughness:
         
         # calculate fitted loglinear parameters
         temp_ds['params'] = temp_ds.apply(lambda row: LogPolynomialWithRoughness.fit_function(
-            [row[h] for h in obs_heights],
-            obs_heights
+            [
+                row[h] for h in obs_heights
+            ],
+            [
+                h - row[snowdepth_variable] if h != Z0 else h for h in obs_heights
+            ]
         ), axis = 1)
         
         # split the params column into two separate columns - we don't need the third (c) parameter 
@@ -191,6 +199,9 @@ class LogPolynomial:
         """ 
         These calculations are done by fitting log-polynomial curve to wind measurements 
         on tower C.
+
+        We do NOT include the boundary wall condition (U=0 at z=0) and therefore
+        we do NOT adjust for snow depth.
         """
 
         # identify two heights on either side of this height 
@@ -310,6 +321,7 @@ class Ri:
         temp_gradient_prefix = 'temp_gradient'
     ):
         """The standard gradient richardson number. See Grachev et al. (2008) equation 3.
+        This uses estimates of the temperature gradient and wind profile gradient to calculate the richardson number.
         """
         multiplier = metpy.constants.g.magnitude / (ds[f'Tpotvirtual_{height}m_c'] * units.celsius).pint.to(units.kelvin)
         Ri = multiplier * ds[f'{temp_gradient_prefix}_{height}m_{tower}'] / ds[f'{wind_gradient_prefix}_{height}m_{tower}']**2
@@ -322,6 +334,7 @@ class Ri:
             tower
     ):
         """The standard gradient richardson number. See Grachev et al. (2008) equation 5.
+        We adjust for snow depth in our calculations.
         """
         pot_virt_temperature_at_height = ds[f'Tpotvirtual_{height}m_{tower}']
         pot_temperature_at_height = ds[f'Tpot_{height}m_{tower}']
@@ -330,7 +343,10 @@ class Ri:
         specific_humidity_at_surface = ds[f'Tsurfmixingratio_{tower}']
         wind_speed_at_height = ds[f'spd_{height}m_{tower}']
 
-        term1 = (metpy.constants.g.magnitude * height) / (pot_virt_temperature_at_height)
+        snow_depth = ds['SnowDepth_d']
+        adjusted_height = height - snow_depth
+        
+        term1 = (metpy.constants.g.magnitude * adjusted_height) / (pot_virt_temperature_at_height)
         term2_numer = (pot_temperature_at_surface - pot_temperature_at_height) + 0.61 * (
             pot_virt_temperature_at_height * ( specific_humidity_at_surface - specific_humidity_at_height)
         )
