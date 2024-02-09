@@ -471,6 +471,9 @@ def add_gradients_and_ri(ds):
 
 def add_obukhov_length(ds):
     """Add Obukhov length at all sonic anemometer heights on the c tower.
+    Using the average virtual temperature, using surface and air measurements. 
+    
+    TODO: I'm not sure if virtual temp should be fed in here in Kelvin or Celsius. I'm going with celsius for now.
 
     Args:
         ds (xr.Dataset): SoS dataset to add variables too
@@ -483,8 +486,12 @@ def add_obukhov_length(ds):
 
         shear_velocity = np.sqrt(np.sqrt(ds[f'u_w__{i}m_c']**2 + ds[f'v_w__{i}m_c']**2))
 
+        surflayr_avg_virtualtemp = 0.5*(
+            ds['Tvirtual_3m_c'] + ds['Tsurfvirtual_c']
+        )
+
         L = - ( 
-            (273.15 + ds[f'Tvirtual_{i}m_c']) * shear_velocity**3 
+            (surflayr_avg_virtualtemp) * shear_velocity**3 
         ) / (
             metpy.constants.g.magnitude * VON_KARMAN * ds[f'w_tc__{i}m_c']
         )
