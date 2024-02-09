@@ -346,8 +346,6 @@ def add_surface_potential_virtual_temperatures(ds):
             absolute_temperature, 
             mixing_ratio
         )
-        print(type(air_density))
-        print(type(mixing_ratio))
         ds[f'Tsurfvirtual{suffix}'] = (['time'], virtual_temperature.pint.magnitude)
         ds[f'Tsurfvirtual{suffix}'] = ds[f'Tsurfvirtual{suffix}'].assign_attrs(units = str(virtual_temperature.pint.units))
 
