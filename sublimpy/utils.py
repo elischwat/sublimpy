@@ -152,42 +152,9 @@ def download_sos_data(
         ds_new = ds[set(ds.data_vars).intersection(variable_names)]
         datasets.append(ds_new)
         
-    sos_ds = merge_datasets_with_different_variables(datasets, dim='time')
+    sos_ds = xr.concat(datasets, dim='time')        
     sos_ds = fill_missing_timestamps(sos_ds)
     return sos_ds
-
-def merge_datasets_with_different_variables(ds_list, dim='time'):
-    """Take a list of datasets and merge them using xr.merge. First check that the two datasets
-    have the same data vars. If they do not, missing data vars in each dataset are added with nan values
-    so that the two datasets have the same set of data vars. NOTE: This gets slow with lots of datasets
-
-    Args:
-        ds_list (list(xr.Dataset)): list of xr.Dataset objects to merge.
-        dim (string): dimension to merge datasets on. You probably want the default. Defaults to 'time'.
-    Returns:
-        xr.Dataset: Merged dataset.
-    """
-    def _merge_datasets_with_different_variables(ds1, ds2, dim):
-        vars1 = set(ds1.data_vars)
-        vars2 = set(ds2.data_vars)
-        in1_notin2 = vars1.difference(vars2)
-        in2_notin1 = vars2.difference(vars1)
-        # add vars with NaN values to ds1
-        for v in in2_notin1:
-            ds1[v] = xr.DataArray(coords=ds1.coords, dims=ds1.dims)
-        # add vars with NaN values to ds2
-        for v in in1_notin2:
-            ds2[v] = xr.DataArray(coords=ds2.coords, dims=ds2.dims)
-        return xr.concat([ds1, ds2], dim=dim)
-
-    new_ds = ds_list.pop(0)
-    while ds_list:
-        new_ds = _merge_datasets_with_different_variables(
-            new_ds,
-            ds_list.pop(0),
-            dim=dim
-        )
-    return new_ds
 
 def modify_df_timezone(df, source_tz, target_tz, time_col='time'):
     """Modify the timezone of a dataframe. The time data should NOT be an index of the provided 
