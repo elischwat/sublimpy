@@ -168,11 +168,11 @@ def add_longwave_radiation(ds):
         xr.Dataset: Augmented SoS dataset.
     """
     # Radiometer temperatures
-    ds['Rlw_in_9m_d'] = ds['Rpile_in_9m_d'] + STEVEN_BOLTZMAN*(ds['Tcase_in_9m_d']+273.15)
-    ds['Rlw_out_9m_d'] = ds['Rpile_out_9m_d'] + STEVEN_BOLTZMAN*(ds['Tcase_out_9m_d']+273.15)
+    ds['Rlw_in_9m_d'] = ds['Rpile_in_9m_d'] + STEVEN_BOLTZMAN*(ds['Tcase_in_9m_d']+273.15)**4
+    ds['Rlw_out_9m_d'] = ds['Rpile_out_9m_d'] + STEVEN_BOLTZMAN*(ds['Tcase_out_9m_d']+273.15)**4
 
-    ds['Rlw_in_9m_uw'] = ds['Rpile_in_uw'] + STEVEN_BOLTZMAN*(ds['Tcase_uw']+273.15)
-    ds['Rlw_out_9m_uw'] = ds['Rpile_out_uw'] + STEVEN_BOLTZMAN*(ds['Tcase_uw']+273.15)
+    ds['Rlw_in_9m_uw'] = ds['Rpile_in_uw'] + STEVEN_BOLTZMAN*(ds['Tcase_uw']+273.15)**4
+    ds['Rlw_out_9m_uw'] = ds['Rpile_out_uw'] + STEVEN_BOLTZMAN*(ds['Tcase_uw']+273.15)**4
 
     return ds
 
