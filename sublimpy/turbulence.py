@@ -4,7 +4,6 @@ import numpy as np
 # Number of datapoints collected in the averaging time period
 # For the SoS dataset, 5 minute averages of 20hz data have 6000 data points
 # per sample
-COUNTS_PER_DATAPOINT = 6000
 
 def clean_eddy_covariance(
         ec_variable: np.array, 
@@ -12,6 +11,7 @@ def clean_eddy_covariance(
         lower_threshold,
         upper_threshold,
         fraction_good_data_reqd: float = 0.9, 
+        counts_per_datapoint = 6000
 ) -> np.array:
 
     assert len(ec_variable) == len(counts_variable)
@@ -24,7 +24,7 @@ def clean_eddy_covariance(
     # Remove datapoints that do not satisfy the fraction_good_data_reqd threshold
     df['ec'] = df.apply(
         lambda row: row['ec'] if (
-                row['count'] >= fraction_good_data_reqd*COUNTS_PER_DATAPOINT
+                row['count'] >= fraction_good_data_reqd*counts_per_datapoint
             ) else np.nan,
         axis = 1 
     )
