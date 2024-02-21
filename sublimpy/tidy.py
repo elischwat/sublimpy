@@ -216,6 +216,8 @@ def _measurement_from_variable_name(name):
         return 'RH'
     elif any([prefix in name for prefix in ['tc_1m', 'tc_2m', 'tc_3m', 'tc_5m', 'tc_10m', 'tc_15m', 'tc_20m']]):
         return 'virtual temperature'
+    elif any([prefix in name for prefix in ['h2o_1m', 'h2o_2m', 'h2o_3m', 'h2o_5m', 'h2o_10m', 'h2o_15m', 'h2o_20m']]):
+        return 'Water vapor density'
     elif any([prefix in name for prefix in [
         'Tsoil_3_1cm_d', 'Tsoil_8_1cm_d', 'Tsoil_18_1cm_d', 'Tsoil_28_1cm_d', 'Tsoil_4_4cm_d', 'Tsoil_9_4cm_d', 'Tsoil_19_4cm_d', 'Tsoil_29_4cm_d', 
         'Tsoil_0_6cm_d',  'Tsoil_10_6cm_d', 'Tsoil_20_6cm_d', 'Tsoil_30_6cm_d', 'Tsoil_1_9cm_d', 'Tsoil_11_9cm_d', 'Tsoil_21_9cm_d', 'Tsoil_31_9cm_d'
