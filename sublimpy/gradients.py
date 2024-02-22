@@ -26,6 +26,10 @@ class LogLinear:
     
     @staticmethod
     def fit_function(values, heights):
+        # remove nans
+        valid = ~(np.isnan(values) | np.isnan(heights))
+        values = values[valid]
+        heights = heights[valid]
         if all([np.isfinite(v) for v in values]):
             (a,b), _ = curve_fit(LogLinear.function, heights, values)
             return a,b
@@ -106,6 +110,10 @@ class LogPolynomialWithRoughness:
     
     @staticmethod
     def fit_function(values, heights):
+        # remove nans
+        valid = ~(np.isnan(values) | np.isnan(heights))
+        values = values[valid]
+        heights = heights[valid]
         if all([np.isfinite(v) for v in values]):
             [a,b,c], _ = curve_fit(LogPolynomialWithRoughness.function, heights, values)
             return a,b,c
@@ -144,6 +152,9 @@ class LogPolynomialWithRoughness:
                 obs_heights
             ))
         )
+
+        # drop nan values (sometimes a single temp variable is missing)
+        temp_ds = temp_ds.dropna()
         
         # calculate fitted loglinear parameters
         temp_ds['params'] = temp_ds.apply(lambda row: LogPolynomialWithRoughness.fit_function(
@@ -180,6 +191,10 @@ class LogPolynomial:
     
     @staticmethod
     def fit_function(values, heights):
+        # remove nans
+        valid = ~(np.isnan(values) | np.isnan(heights))
+        values = values[valid]
+        heights = heights[valid]
         if all([np.isfinite(v) for v in values]):
             [a,b,c], _ = curve_fit(LogPolynomial.function, heights, values)
             return a,b,c

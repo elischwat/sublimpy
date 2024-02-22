@@ -227,10 +227,6 @@ def _measurement_from_variable_name(name):
         return 'ground heat flux'
     elif name == 'Qsoil_d':   
         return 'soil moisture'
-    elif name == 'Rsw_in_9m_d':
-        return 'shortwave radiation incoming'
-    elif name == 'Rsw_out_9m_d':
-        return 'shortwave radiation outgoing'
     elif name in ['Vtherm_c', 'Vtherm_d', 'Vtherm_ue', 'Vtherm_uw']:
         return "Vtherm"
     elif name in ['Vpile_c', 'Vpile_d', 'Vpile_ue', 'Vpile_uw']:
@@ -250,10 +246,18 @@ def _measurement_from_variable_name(name):
         'Tpot_11m_', 'Tpot_12m_', 'Tpot_13m_', 'Tpot_14m_', 'Tpot_15m_', 'Tpot_16m_', 'Tpot_17m_', 'Tpot_18m_', 'Tpot_19m_', 'Tpot_20m_'
     ]]):
         return 'potential temperature'
-    elif name == 'Rlw_in_9m_d':
+    elif name in ['Rlw_in_9m_d', 'Rlw_in_9m_uw']:
         return 'longwave radiation incoming'
-    elif name == 'Rlw_out_9m_d':
+    elif name in ['Rlw_out_9m_d', 'Rlw_out_9m_uw']:
         return 'longwave radiation outgoing'
+    elif name == 'Rlw_net_9m_d':
+        return 'longwave radiation net'
+    elif name == 'Rsw_in_9m_d':
+        return 'shortwave radiation incoming'
+    elif name == 'Rsw_out_9m_d':
+        return 'shortwave radiation outgoing'
+    elif name == 'Rsw_net_9m_d':
+        return 'shortwave radiation net'
     elif name in ['Tsurf_c', 'Tsurf_d', 'Tsurf_ue', 'Tsurf_uw', 'Tsurf_rad_d', 'Tsurfplanck_c', 'Tsurfplanck_d', 'Tsurfplanck_ue', 'Tsurfplanck_uw']:
         return "surface temperature"
     elif any([prefix in name for prefix in ['tke_1m_',    'tke_2m_',    'tke_3m_',    'tke_5m_',    'tke_10m_',    'tke_15m_',    'tke_20m_']]):
@@ -268,6 +272,8 @@ def _measurement_from_variable_name(name):
         return 'air density'
     elif name.startswith('Tsurfmixingratio'):
         return 'mixing ratio'
+    elif name.startswith('Tsurfspecifichumidity'):
+        return 'specific humidity'
     # the order of the following two matters
     elif name.startswith('Tsurfpotvirtual'):
         return 'surface potential virtual temperature'
@@ -283,6 +289,8 @@ def _measurement_from_variable_name(name):
         return 'air density'
     elif name.startswith('mixingratio'):
         return 'mixing ratio'
+    elif name.startswith('specifichumidity'):
+        return 'specific humidity'
     elif name.startswith('vaporpressure'):
         return 'vapor pressure'
     elif name.startswith('temp_gradient'):

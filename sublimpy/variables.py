@@ -469,7 +469,7 @@ def add_gradients_and_ri(ds):
     
     return ds
 
-def add_obukhov_length(ds):
+def add_shear_velocity_and_obukhov_length(ds):
     """Add Obukhov length at all sonic anemometer heights on the c tower.
     Using the average virtual temperature, using surface and air measurements. 
     
@@ -482,6 +482,11 @@ def add_obukhov_length(ds):
         xr.Dataset: Augmented SoS dataset.
     """
     # iterate over pressure measurements
+    for tower in ['d','ue','uw']:
+        for i in [1,3,10]:
+            shear_velocity = np.sqrt(np.sqrt(ds[f'u_w__{i}m_{tower}']**2 + ds[f'v_w__{i}m_{tower}']**2))
+            ds[f'u*_{i}m_{tower}'] = shear_velocity
+
     for i in [2,3,5,10,15,20]:
 
         shear_velocity = np.sqrt(np.sqrt(ds[f'u_w__{i}m_c']**2 + ds[f'v_w__{i}m_c']**2))
