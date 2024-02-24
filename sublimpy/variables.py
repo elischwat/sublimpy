@@ -233,7 +233,7 @@ def add_potential_virtual_temperatures(ds):
         xr.Dataset: Augmented SoS dataset.
     """
     # iterate over heights on C tower.
-    for i in range(2,21):
+    for i in range(1,21):
         absolute_temperature = ds[f'T_{i}m_c'] * units.celsius
         relative_humidity = ds[f'RH_{i}m_c']
         absolute_pressure = ds['P_10m_c'] * units.millibar
@@ -415,12 +415,24 @@ def add_gradients_and_ri(ds):
     Returns:
         xr.Dataset: Augmented SoS dataset.
     """
-    ds['wind_gradient_2m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(ds, 2, 'c').values)
-    ds['wind_gradient_3m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(ds, 3, 'c').values)
-    ds['wind_gradient_5m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(ds, 5, 'c').values)
-    ds['wind_gradient_10m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(ds, 10, 'c').values)
-    ds['wind_gradient_15m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(ds, 15, 'c').values)
-    ds['wind_gradient_20m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(ds, 20, 'c').values)
+    ds['wind_gradient_2m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(
+        ds, 2, 'c', snow_depth_var='SnowDepth_d').values
+    )
+    ds['wind_gradient_3m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(
+        ds, 3, 'c', snow_depth_var='SnowDepth_d').values
+    )
+    ds['wind_gradient_5m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(
+        ds, 5, 'c', snow_depth_var='SnowDepth_d').values
+    )
+    ds['wind_gradient_10m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(
+        ds, 10, 'c', snow_depth_var='SnowDepth_d').values
+    )
+    ds['wind_gradient_15m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(
+        ds, 15, 'c', snow_depth_var='SnowDepth_d').values
+    )
+    ds['wind_gradient_20m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(
+        ds, 20, 'c', snow_depth_var='SnowDepth_d').values
+    )
 
     ds['temp_gradient_2m_c'] = (['time'], 
         LogPolynomialWithRoughness.calculate_temperature_gradient_for_height(
