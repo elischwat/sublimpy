@@ -416,22 +416,22 @@ def add_gradients_and_ri(ds):
         xr.Dataset: Augmented SoS dataset.
     """
     ds['wind_gradient_2m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(
-        ds, 2, 'c', snow_depth_var='SnowDepth_d').values
+        ds, 2, 'c', snow_depth_var='SnowDepth_c').values
     )
     ds['wind_gradient_3m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(
-        ds, 3, 'c', snow_depth_var='SnowDepth_d').values
+        ds, 3, 'c', snow_depth_var='SnowDepth_c').values
     )
     ds['wind_gradient_5m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(
-        ds, 5, 'c', snow_depth_var='SnowDepth_d').values
+        ds, 5, 'c', snow_depth_var='SnowDepth_c').values
     )
     ds['wind_gradient_10m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(
-        ds, 10, 'c', snow_depth_var='SnowDepth_d').values
+        ds, 10, 'c', snow_depth_var='SnowDepth_c').values
     )
     ds['wind_gradient_15m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(
-        ds, 15, 'c', snow_depth_var='SnowDepth_d').values
+        ds, 15, 'c', snow_depth_var='SnowDepth_c').values
     )
     ds['wind_gradient_20m_c'] = (['time'], LogPolynomial.calculate_wind_gradient_for_height(
-        ds, 20, 'c', snow_depth_var='SnowDepth_d').values
+        ds, 20, 'c', snow_depth_var='SnowDepth_c').values
     )
 
     ds['temp_gradient_2m_c'] = (['time'], 

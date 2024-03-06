@@ -69,7 +69,7 @@ class LogPolynomialWithRoughness:
         obs_heights = [Z0,1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
         temp_variables = ['Tsurfpotvirtual_c'] + [f'Tpotvirtual_{h}m_c' for h in obs_heights[1:]]
         
-        snowdepth_variable = 'SnowDepth_d'
+        snowdepth_variable = 'SnowDepth_c'
 
         # create_datasets for u and v data 
         temp_ds = ds[temp_variables + [snowdepth_variable]].to_dataframe().rename(
@@ -218,7 +218,7 @@ class Ri:
         specific_humidity_at_surface = ds[f'Tsurfmixingratio_{tower}']
         wind_speed_at_height = ds[f'spd_{height}m_{tower}']
 
-        snow_depth = ds['SnowDepth_d']
+        snow_depth = ds['SnowDepth_c']
         adjusted_height = height - snow_depth
         
         term1 = (metpy.constants.g.magnitude * adjusted_height) / (pot_virt_temperature_at_height)

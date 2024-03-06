@@ -23,10 +23,10 @@ import turbpy
 
 
 ROTATION_SUPPORTED_MEASUREMENTS = [
-     'u',     'v',     
-     'u_w_',     'v_w_', 
-     'u_tc_',     'v_tc_',    
-    'u_h2o_',     'v_h2o_',    
+    'u',        'v',     
+    'u_w_',     'v_w_', 
+    'u_tc_',    'v_tc_',    
+    'u_h2o_',   'v_h2o_',    
     ]
 
 def open_datasets_as_dataframe(file_list, variables = None):
@@ -295,7 +295,7 @@ def streamwise_coordinates_xarray(ds):
 def streamwise_coordinates_single_rotation_tidy_df(original_tidy_df):
     """Modify multiple data variables of a tidy_df created from a SoS netcdf dataset (see 
     `get_tidy_dataset` abozve). Namely, the u and v velocity variables and all first and second 
-    covariances. A single rotation is used (no adjustment to the  vertical axis) based on the mean
+    covariances. A single rotation is used (no adjustment to the vertical axis) based on the mean
     u and v velocity over the provided time period. The returned dataset will have all relevant data 
     variables replaced with rotated values.
     Args:
