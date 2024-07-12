@@ -166,6 +166,10 @@ def _measurement_from_variable_name(name):
             return 'eddy covariance P high rate count'
         else:
             return 'eddy covariance momentum high rate count'        
+    if name.startswith('irgadiag_'):
+        return 'irgason diagnostic flag'
+    if name.startswith('ldiag_'):
+        return 'sonic anemometer diagnostic flag'
     if any([prefix in name for prefix in ['SF_avg_1m_ue', 'SF_avg_2m_ue']]): # these are the only two 
         return 'snow flux'
     elif any([prefix in name for prefix in ['P_10m_', 'P_20m_']]):
@@ -180,30 +184,36 @@ def _measurement_from_variable_name(name):
         return 'v'
     elif any([prefix in name for prefix in ['w_1m_','w_2m_','w_3m_','w_5m_','w_10m_','w_15m_','w_20m_']]):
         return 'w'
-    elif any([prefix in name for prefix in ['u_u__1m_', 'u_u__2m_', 'u_u__3m_', 'u_u__5m_', 'u_u__10m_', 'u_u__15m_', 'u_u__20m_']]):
+    elif any([prefix in name for prefix in ['u_u__1m_',  'u_u__2m_', 'u_u__2_5m_',  'u_u__3m_', 'u_u__5m_', 'u_u__10m_', 'u_u__15m_', 'u_u__20m_']]):
         return 'u_u_'
-    elif any([prefix in name for prefix in ['v_v__1m_', 'v_v__2m_', 'v_v__3m_', 'v_v__5m_', 'v_v__10m_', 'v_v__15m_', 'v_v__20m_']]):
+    elif any([prefix in name for prefix in ['v_v__1m_',  'v_v__2m_', 'v_v__2_5m_',  'v_v__3m_', 'v_v__5m_', 'v_v__10m_', 'v_v__15m_', 'v_v__20m_']]):
         return 'v_v_'
-    elif any([prefix in name for prefix in ['w_w__1m_', 'w_w__2m_', 'w_w__3m_', 'w_w__5m_', 'w_w__10m_', 'w_w__15m_', 'w_w__20m_']]):
+    elif any([prefix in name for prefix in ['w_w__1m_',  'w_w__2m_', 'w_w__2_5m_',  'w_w__3m_', 'w_w__5m_', 'w_w__10m_', 'w_w__15m_', 'w_w__20m_']]):
         return 'w_w_'
-    elif any([prefix in name for prefix in ['u_w__1m_','u_w__2m_','u_w__3m_','u_w__5m_','u_w__10m_','u_w__15m_','u_w__20m_']]):
+    elif any([prefix in name for prefix in ['u_w__1m_', 'u_w__2m_', 'u_w__2_5m_', 'u_w__3m_','u_w__5m_','u_w__10m_','u_w__15m_','u_w__20m_']]):
         return 'u_w_'
-    elif any([prefix in name for prefix in ['v_w__1m_','v_w__2m_','v_w__3m_','v_w__5m_','v_w__10m_','v_w__15m_','v_w__20m_']]):
+    elif any([prefix in name for prefix in ['v_w__1m_', 'v_w__2m_', 'v_w__2_5m_', 'v_w__3m_','v_w__5m_','v_w__10m_','v_w__15m_','v_w__20m_']]):
         return 'v_w_'
-    elif any([prefix in name for prefix in ['u_v__1m_','u_v__2m_','u_v__3m_','u_v__5m_','u_v__10m_','u_v__15m_','u_v__20m_']]):
+    elif any([prefix in name for prefix in ['u_v__1m_', 'u_v__2m_', 'u_v__2_5m_', 'u_v__3m_','u_v__5m_','u_v__10m_','u_v__15m_','u_v__20m_']]):
         return 'u_v_'
-    elif any([prefix in name for prefix in ['u_tc__1m_','u_tc__2m_','u_tc__3m_','u_tc__5m_','u_tc__10m_','u_tc__15m_','u_tc__20m_']]):
+    elif any([prefix in name for prefix in ['u_tc__1m_', 'u_tc__2m_', 'u_tc__2_5m_', 'u_tc__3m_','u_tc__5m_','u_tc__10m_','u_tc__15m_','u_tc__20m_']]):
         return 'u_tc_'
-    elif any([prefix in name for prefix in ['v_tc__1m_','v_tc__2m_','v_tc__3m_','v_tc__5m_','v_tc__10m_','v_tc__15m_','v_tc__20m_']]):
+    elif any([prefix in name for prefix in ['v_tc__1m_', 'v_tc__2m_', 'v_tc__2_5m_', 'v_tc__3m_','v_tc__5m_','v_tc__10m_','v_tc__15m_','v_tc__20m_']]):
         return 'v_tc_'
-    elif any([prefix in name for prefix in ['w_tc__1m_','w_tc__2m_','w_tc__3m_','w_tc__5m_','w_tc__10m_','w_tc__15m_','w_tc__20m_']]):
+    elif any([prefix in name for prefix in ['w_tc__1m_', 'w_tc__2m_', 'w_tc__2_5m_', 'w_tc__3m_','w_tc__5m_','w_tc__10m_','w_tc__15m_','w_tc__20m_']]):
         return 'w_tc_'
-    elif any([prefix in name for prefix in ['u_h2o__1m_','u_h2o__2m_','u_h2o__3m_','u_h2o__5m_','u_h2o__10m_','u_h2o__15m_','u_h2o__20m_']]):
+    elif any([prefix in name for prefix in ['u_h2o__1m_', 'u_h2o__2m_', 'u_h2o__2_5m_', 'u_h2o__3m_','u_h2o__5m_','u_h2o__10m_','u_h2o__15m_','u_h2o__20m_']]):
         return 'u_h2o_'
-    elif any([prefix in name for prefix in ['v_h2o__1m_','v_h2o__2m_','v_h2o__3m_','v_h2o__5m_','v_h2o__10m_','v_h2o__15m_','v_h2o__20m_']]):
+    elif any([prefix in name for prefix in ['v_h2o__1m_', 'v_h2o__2m_', 'v_h2o__2_5m_', 'v_h2o__3m_','v_h2o__5m_','v_h2o__10m_','v_h2o__15m_','v_h2o__20m_']]):
         return 'v_h2o_'
-    elif any([prefix in name for prefix in ['w_h2o__1m_','w_h2o__2m_','w_h2o__3m_','w_h2o__5m_','w_h2o__10m_','w_h2o__15m_','w_h2o__20m_']]):
+    elif any([prefix in name for prefix in ['w_h2o__1m_', 'w_h2o__2m_', 'w_h2o__2_5m_', 'w_h2o__3m_','w_h2o__5m_','w_h2o__10m_','w_h2o__15m_','w_h2o__20m_']]):
         return 'w_h2o_'
+    elif any([prefix in name for prefix in ['u_co2__1m_', 'u_co2__2m_', 'u_co2__2_5m_', 'u_co2__3m_','u_co2__5m_','u_co2__10m_','u_co2__15m_','u_co2__20m_']]):
+        return 'u_co2_'
+    elif any([prefix in name for prefix in ['v_co2__1m_', 'v_co2__2m_', 'v_co2__2_5m_', 'v_co2__3m_','v_co2__5m_','v_co2__10m_','v_co2__15m_','v_co2__20m_']]):
+        return 'v_co2_'
+    elif any([prefix in name for prefix in ['w_co2__1m_', 'w_co2__2m_', 'w_co2__2_5m_', 'w_co2__3m_','w_co2__5m_','w_co2__10m_','w_co2__15m_','w_co2__20m_']]):
+        return 'w_co2_'
     elif any([prefix in name for prefix in [
         'T_1m_', 'T_2m_', 'T_3m_', 'T_4m_', 'T_5m_', 'T_6m_', 'T_7m_', 'T_8m_', 'T_9m_', 'T_10m_', 
         'T_11m_', 'T_12m_', 'T_13m_', 'T_14m_', 'T_15m_', 'T_16m_', 'T_17m_', 'T_18m_', 'T_19m_', 'T_20m_'
@@ -218,6 +228,8 @@ def _measurement_from_variable_name(name):
         return 'virtual temperature'
     elif any([prefix in name for prefix in ['h2o_1m', 'h2o_2m', 'h2o_3m', 'h2o_5m', 'h2o_10m', 'h2o_15m', 'h2o_20m']]):
         return 'Water vapor density'
+    elif any([prefix in name for prefix in ['co2_1m', 'co2_2m', 'co2_3m', 'co2_5m', 'co2_10m', 'co2_15m', 'co2_20m']]):
+        return 'Carbon dioxide density'
     elif any([prefix in name for prefix in [
         'Tsoil_3_1cm_d', 'Tsoil_8_1cm_d', 'Tsoil_18_1cm_d', 'Tsoil_28_1cm_d', 'Tsoil_4_4cm_d', 'Tsoil_9_4cm_d', 'Tsoil_19_4cm_d', 'Tsoil_29_4cm_d', 
         'Tsoil_0_6cm_d',  'Tsoil_10_6cm_d', 'Tsoil_20_6cm_d', 'Tsoil_30_6cm_d', 'Tsoil_1_9cm_d', 'Tsoil_11_9cm_d', 'Tsoil_21_9cm_d', 'Tsoil_31_9cm_d'
@@ -250,14 +262,16 @@ def _measurement_from_variable_name(name):
         return 'longwave radiation incoming'
     elif name in ['Rlw_out_9m_d', 'Rlw_out_9m_uw']:
         return 'longwave radiation outgoing'
-    elif name == 'Rlw_net_9m_d':
+    elif name in ['Rlw_net_9m_d', 'Rlw_net_9m_uw']:
         return 'longwave radiation net'
-    elif name == 'Rsw_in_9m_d':
+    elif name in ['Rsw_in_9m_d', 'Rsw_in_9m_uw']:
         return 'shortwave radiation incoming'
-    elif name == 'Rsw_out_9m_d':
+    elif name in ['Rsw_out_9m_d', 'Rsw_out_9m_uw']:
         return 'shortwave radiation outgoing'
-    elif name == 'Rsw_net_9m_d':
+    elif name in ['Rsw_net_9m_d', 'Rsw_net_9m_uw']:
         return 'shortwave radiation net'
+    elif name in ['Rnet_9m_d', 'Rnet_9m_uw']:
+        return 'radiation net'
     elif name in ['Tsurf_c', 'Tsurf_d', 'Tsurf_ue', 'Tsurf_uw', 'Tsurf_rad_d', 'Tsurfplanck_c', 'Tsurfplanck_d', 'Tsurfplanck_ue', 'Tsurfplanck_uw']:
         return "surface temperature"
     elif any([prefix in name for prefix in ['tke_1m_',    'tke_2m_',    'tke_3m_',    'tke_5m_',    'tke_10m_',    'tke_15m_',    'tke_20m_']]):
