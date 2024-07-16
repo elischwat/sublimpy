@@ -301,6 +301,8 @@ def _measurement_from_variable_name(name):
         return 'virtual temperature'
     elif name.startswith('airdensity'):
         return 'air density'
+    elif name.startswith('dryairdensity'):
+        return 'dry air density'
     elif name.startswith('mixingratio'):
         return 'mixing ratio'
     elif name.startswith('specifichumidity'):
