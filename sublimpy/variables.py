@@ -283,8 +283,8 @@ def add_potential_virtual_temperatures(ds):
         ds[f'airdensity_{i}m_c'] = (['time'], air_density.pint.magnitude)
         ds[f'airdensity_{i}m_c'] = ds[f'airdensity_{i}m_c'].assign_attrs(units = str(air_density.pint.units))
 
-        ds[f'dryairdensity_{i}m_c'] = (['time'], air_density.pint.magnitude)
-        ds[f'dryairdensity_{i}m_c'] = ds[f'dryairdensity_{i}m_c'].assign_attrs(units = str(air_density.pint.units))
+        ds[f'dryairdensity_{i}m_c'] = (['time'], dryair_density.pint.magnitude)
+        ds[f'dryairdensity_{i}m_c'] = ds[f'dryairdensity_{i}m_c'].assign_attrs(units = str(dryair_density.pint.units))
 
         ds[f'mixingratio_{i}m_c'] = (['time'], mixing_ratio.pint.magnitude)
         ds[f'mixingratio_{i}m_c'] = ds[f'mixingratio_{i}m_c'].assign_attrs(units = str(mixing_ratio.pint.units))
@@ -339,7 +339,8 @@ def add_surface_potential_virtual_temperatures(ds):
         )
 
         air_density = metpy.calc.density(height_adj_pressure, absolute_temperature, mixing_ratio)
-                
+        dryair_density = metpy.calc.density(height_adj_pressure, absolute_temperature, 0)
+
         virtual_temperature = metpy.calc.virtual_temperature(
             absolute_temperature,
             mixing_ratio,
@@ -358,6 +359,9 @@ def add_surface_potential_virtual_temperatures(ds):
 
         ds[f'Tsurfairdensity{suffix}'] = (['time'], air_density.pint.magnitude)
         ds[f'Tsurfairdensity{suffix}'] = ds[f'Tsurfairdensity{suffix}'].assign_attrs(units = str(air_density.pint.units))
+
+        ds[f'Tsurfdryairdensity{suffix}'] = (['time'], dryair_density.pint.magnitude)
+        ds[f'Tsurfdryairdensity{suffix}'] = ds[f'Tsurfdryairdensity{suffix}'].assign_attrs(units = str(dryair_density.pint.units))
 
         ds[f'Tsurfmixingratio{suffix}'] = (['time'], mixing_ratio.magnitude)
         ds[f'Tsurfmixingratio{suffix}'] = ds[f'Tsurfmixingratio{suffix}'].assign_attrs(units = str(mixing_ratio.units))
