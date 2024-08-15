@@ -316,6 +316,7 @@ def streamwise_coordinates_single_rotation_tidy_df(original_tidy_df):
     variable_pairs = [
         ('u', 'v'), 
         ('u_w_', 'v_w_'), 
+        ('u_u_', 'v_v_'),
         ('u_tc_', 'v_tc_'), 
         ('u_h2o_', 'v_h2o_'), 
     ]
