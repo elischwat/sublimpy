@@ -10,7 +10,7 @@ from sublimpy.gradients import LogPolynomial, LogPolynomialWithRoughness, Ri
 
 # Constants used in calculations.
 STEVEN_BOLTZMAN = 5.67e-08 #W/m^2/degK^4
-SNOW_EMMISIVITY = 0.98 
+# SNOW_EMMISIVITY = 0.98 
 VON_KARMAN = 0.4
 
 # A list of the default variables that one might use when analyzing SoS datasets.
@@ -91,7 +91,25 @@ DEFAULT_VARIABLES = [
     'Rsw_in_9m_d',
 ]
 
-def apogee2temp(ds,tower, brightness_conversion_method = 'stefan–boltzmann'):
+def sensortemp2targettemp(dat, tower, lw_in_var = 'Rlw_in_9m_d', emissivity=0.99):
+    """
+    This function will perform a emissivity correction to calculate the target temperature from the sensor temperature.
+    It will use the blackbody temperature from the downwelling longwave radiation sensor to calculate background temperature.
+    It will use an emissivity of 0.99 for the snow surface (Warren, 1982). 
+    """
+    sensor_temp = apogee2temp(dat, tower)
+
+    # calculate the background temperature
+    bg_blackbody_temp = (dat[lw_in_var] / STEVEN_BOLTZMAN)**0.25
+    # fill in missing values with linear interpolation, up to 12 hours
+    bg_blackbody_temp = bg_blackbody_temp.interpolate_na('time', limit=144)
+    # calculate the target temperature
+    target_temp = ((sensor_temp**4  - (1-emissivity)*(bg_blackbody_temp**4))/emissivity)**0.25
+    # convert to celsius, add units
+    target_temp = (target_temp - 273.15)*units.degC
+    return target_temp
+
+def apogee2temp(ds, tower, brightness_conversion_method = 'stefan–boltzmann'):
     """Calculate surface temperature from apogee data.
 
     Args:
@@ -136,24 +154,24 @@ def apogee2temp(ds,tower, brightness_conversion_method = 'stefan–boltzmann'):
     # dimnames(TTc)[[2]] = paste0("Tsfc.Ap.",sufs)
     TTc = TTc * units('celsius')
     TTk_brightness = TTc.pint.to("kelvin")
-
-    # convert from brightness temp to actual temp
-    if brightness_conversion_method == 'stefan–boltzmann':
-        TTk_actual = TTk_brightness*(1/SNOW_EMMISIVITY)**(1/4)
-        TTc_actual = TTk_actual.pint.to("celsius")
-        return TTc_actual
-    elif brightness_conversion_method == 'planck':
-        wavelength = 11e-6
-        h=6.62606896e-34 # Planck, J/s
-        k=1.3806504e-23 # Boltzmann, J/K
-        c=299792458 # speed of light, m/s
-        TTk_actual = h*c/(wavelength*k)*1/(np.log(1-SNOW_EMMISIVITY+SNOW_EMMISIVITY*np.exp(h*c/(k*wavelength*TTk_brightness.pint.magnitude))));
-        # do conversion from K to ˚C using metpy
-        TTk_actual = TTk_actual * units('kelvin')
-        TTc_actual = TTk_actual.to("celsius")
-        return xr.DataArray(TTc_actual)
-    else:
-        raise ValueError(f"brightness_conversion_method parameter should be either 'stefan–boltzmann' or 'planck', got {brightness_conversion_method}")
+    return TTk_brightness.values
+    # # convert from brightness temp to actual temp
+    # if brightness_conversion_method == 'stefan–boltzmann':
+    #     TTk_actual = TTk_brightness*(1/SNOW_EMMISIVITY)**(1/4)
+    #     TTc_actual = TTk_actual.pint.to("celsius")
+    #     return TTc_actual
+    # elif brightness_conversion_method == 'planck':
+    #     wavelength = 11e-6
+    #     h=6.62606896e-34 # Planck, J/s
+    #     k=1.3806504e-23 # Boltzmann, J/K
+    #     c=299792458 # speed of light, m/s
+    #     TTk_actual = h*c/(wavelength*k)*1/(np.log(1-SNOW_EMMISIVITY+SNOW_EMMISIVITY*np.exp(h*c/(k*wavelength*TTk_brightness.pint.magnitude))));
+    #     # do conversion from K to ˚C using metpy
+    #     TTk_actual = TTk_actual * units('kelvin')
+    #     TTc_actual = TTk_actual.to("celsius")
+    #     return xr.DataArray(TTc_actual)
+    # else:
+    #     raise ValueError(f"brightness_conversion_method parameter should be either 'stefan–boltzmann' or 'planck', got {brightness_conversion_method}")
 
 
 def add_longwave_radiation(ds):
@@ -186,23 +204,23 @@ def add_surface_temps(ds):
     Returns:
         xr.Dataset: Augmented SoS dataset.
     """
-    # Radiometer temperatures
-    ds['Tsurf_rad_d'] = (
-        (
-            ds['Rpile_out_9m_d'] + STEVEN_BOLTZMAN * (ds['Tcase_out_9m_d']+273.15)**4
-        ) / (SNOW_EMMISIVITY*STEVEN_BOLTZMAN)
-    )**(1/4) - 273.15
+    # # Radiometer temperatures
+    # ds['Tsurf_rad_d'] = (
+    #     (
+    #         ds['Rpile_out_9m_d'] + STEVEN_BOLTZMAN * (ds['Tcase_out_9m_d']+273.15)**4
+    #     ) / (SNOW_EMMISIVITY*STEVEN_BOLTZMAN)
+    # )**(1/4) - 273.15
 
     # Apogee temperatures
-    ds['Tsurf_c'] = (['time'],  apogee2temp(ds, 'c').values)
-    ds['Tsurf_d'] = (['time'],  apogee2temp(ds, 'd').values)
-    ds['Tsurf_ue'] = (['time'],  apogee2temp(ds, 'ue').values)
-    ds['Tsurf_uw'] = (['time'],  apogee2temp(ds, 'uw').values)
+    ds['Tsurf_c'] = (['time'],  sensortemp2targettemp(ds, 'c').values)
+    ds['Tsurf_d'] = (['time'],  sensortemp2targettemp(ds, 'd').values)
+    ds['Tsurf_ue'] = (['time'],  sensortemp2targettemp(ds, 'ue').values)
+    ds['Tsurf_uw'] = (['time'],  sensortemp2targettemp(ds, 'uw').values)
 
-    ds['Tsurfplanck_c'] = (['time'],  apogee2temp(ds, 'c', brightness_conversion_method='planck').values)
-    ds['Tsurfplanck_d'] = (['time'],  apogee2temp(ds, 'd', brightness_conversion_method='planck').values)
-    ds['Tsurfplanck_ue'] = (['time'],  apogee2temp(ds, 'ue', brightness_conversion_method='planck').values)
-    ds['Tsurfplanck_uw'] = (['time'],  apogee2temp(ds, 'uw', brightness_conversion_method='planck').values)
+    # ds['Tsurfplanck_c'] = (['time'],  apogee2temp(ds, 'c', brightness_conversion_method='planck').values)
+    # ds['Tsurfplanck_d'] = (['time'],  apogee2temp(ds, 'd', brightness_conversion_method='planck').values)
+    # ds['Tsurfplanck_ue'] = (['time'],  apogee2temp(ds, 'ue', brightness_conversion_method='planck').values)
+    # ds['Tsurfplanck_uw'] = (['time'],  apogee2temp(ds, 'uw', brightness_conversion_method='planck').values)
     
     return ds
 
