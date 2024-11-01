@@ -322,7 +322,7 @@ def add_surface_potential_virtual_temperatures(ds):
     Returns:
         xr.Dataset: Augmented SoS dataset.
     """
-    surface_temp_measurement_suffixes = ['_rad_d', '_c']
+    surface_temp_measurement_suffixes = ['_c']
 
     for suffix in surface_temp_measurement_suffixes:
         height_relative_to_10m_pressure_sensor = - (10*units.m)
