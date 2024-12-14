@@ -284,8 +284,35 @@ def calculate_and_apply_planar_fit(u, v, w):
     (u_streamwise, v_streamwise, w_streamwise) = apply_planar_fit(u, v, w, a, W_f)
     return (u_streamwise, v_streamwise, w_streamwise)
 
-    
+def calculate_and_apply_double_rotation(us, vs, ws):
+    """Provides planar fit adjusted velocity components for a given dataset of u,v,w.
 
+    Args:
+        u (_type_): _description_
+        v (_type_): _description_
+        w (_type_): _description_
+
+    Returns:
+       (float,float,float), (float, float), (np.array, np.array, np.array):
+                 (a,b,c), (tilt (radians), tiltaz (rad)), (u_streamwise, v_streamwise, w_streamwise)
+    """
+    u1s = []
+    v1s = []
+    w1s = []
+    for (u,v,w) in zip(us,vs,ws):
+        theta = np.arctan2(v, u)
+        u1s.append(u*np.cos(theta) + v*np.sin(theta))
+        v1s.append(-u*np.sin(theta) + v*np.cos(theta))
+        w1s.append(w)
+    u2s = []
+    v2s = []
+    w2s = []
+    for (u,v,w) in zip(u1s,v1s,w1s):
+        phi = np.arctan2(w, u)
+        u2s.append(u*np.cos(phi) + w*np.sin(phi))
+        v2s.append(v)
+        w2s.append(-u*np.sin(phi) + w*np.cos(phi))
+    return (u2s, v2s, w2s)
 
 def streamwise_coordinates_xarray(ds):
     assert type(ds) == xr.DataSet
